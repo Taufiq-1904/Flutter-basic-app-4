@@ -1,0 +1,73 @@
+# ==============================
+# OS / System files
+# ==============================
+.DS_Store
+Thumbs.db
+
+# ==============================
+# Logs
+# ==============================
+*.log
+
+# ==============================
+# Editor / IDE
+# ==============================
+.idea/
+*.iml
+*.ipr
+*.iws
+
+.vscode/
+
+# ==============================
+# Dart / Flutter
+# ==============================
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+
+# Generated files
+coverage/
+
+# ==============================
+# Android
+# ==============================
+android/.gradle/
+android/local.properties
+android/app/debug/
+android/app/profile/
+android/app/release/
+
+# ==============================
+# iOS
+# ==============================
+ios/Flutter/.last_build_id
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+
+# ==============================
+# MacOS
+# ==============================
+macos/Pods/
+
+# ==============================
+# Linux / Windows build
+# ==============================
+linux/flutter/ephemeral/
+windows/flutter/ephemeral/
+
+# ==============================
+# Misc
+# ==============================
+*.swp
+*.pyc
+.history
+.svn/
+.build/
+.buildlog/
