@@ -4,15 +4,15 @@ class Anggota {
   final String nama;
   final String nim;
   final String peran;
-  final IconData icon;
-  final Color color;
+  final String initials;
+  final List<Color> gradientColors;
 
   const Anggota({
     required this.nama,
     required this.nim,
     required this.peran,
-    required this.icon,
-    required this.color,
+    required this.initials,
+    required this.gradientColors,
   });
 }
 
@@ -21,207 +21,202 @@ class DataKelompokPage extends StatelessWidget {
 
   static const List<Anggota> _anggota = [
     Anggota(
-      nama: 'Ahmad Rizky Pratama',
-      nim: '2024001001',
-      peran: 'Ketua Kelompok',
-      icon: Icons.stars_rounded,
-      color: Color(0xFF1565C0),
+      nama: 'Taufiq Candra Kurniawan',
+      nim: '123230074',
+      peran: 'Controller',
+      initials: 'TCK',
+      gradientColors: [Color(0xFF6366F1), Color(0xFF818CF8)],
     ),
     Anggota(
-      nama: 'Siti Nurhaliza',
-      nim: '2024001002',
-      peran: 'Sekretaris',
-      icon: Icons.edit_note_rounded,
-      color: Color(0xFF2E7D32),
+      nama: 'Akmal Abrisam',
+      nim: '123230084',
+      peran: 'Initiator',
+      initials: 'AA',
+      gradientColors: [Color(0xFF06B6D4), Color(0xFF67E8F9)],
     ),
     Anggota(
-      nama: 'Budi Santoso',
-      nim: '2024001003',
-      peran: 'Bendahara',
-      icon: Icons.account_balance_wallet_rounded,
-      color: Color(0xFF6A1B9A),
+      nama: 'Raffy Adrian Hidayat',
+      nim: '123230125',
+      peran: 'Sentinel',
+      initials: 'RAH',
+      gradientColors: [Color(0xFF10B981), Color(0xFF6EE7B7)],
     ),
     Anggota(
-      nama: 'Dewi Rahmawati',
-      nim: '2024001004',
-      peran: 'Anggota',
-      icon: Icons.person_rounded,
-      color: Color(0xFFE65100),
+      nama: 'Athallah Joyoningrat',
+      nim: '123230230',
+      peran: 'Duelist',
+      initials: 'AJ',
+      gradientColors: [Color(0xFFF59E0B), Color(0xFFFCD34D)],
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Data Kelompok',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: const Color(0xFF1565C0),
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // Header card
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [const Color(0xFF1565C0), const Color(0xFF1976D2)],
-              ),
-              borderRadius: BorderRadius.circular(16),
+    final primary = Theme.of(context).colorScheme.primary;
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: [
+        // Welcome banner
+        Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [primary, primary.withOpacity(0.8)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            child: Column(
-              children: [
-                const Icon(Icons.groups_rounded, color: Colors.white, size: 48),
-                const SizedBox(height: 10),
-                const Text(
-                  'Kelompok 1',
-                  style: TextStyle(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(
+                    Icons.groups_rounded,
                     color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
+                    size: 28,
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Mata Kuliah Pemrograman Mobile',
-                  style: TextStyle(color: Colors.white.withOpacity(0.85)),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '${_anggota.length} Anggota',
-                    style: const TextStyle(
+                  const SizedBox(width: 10),
+                  const Text(
+                    'Kelompok 4',
+                    style: TextStyle(
                       color: Colors.white,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Teknologi Pemrograman Mobile',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.85),
+                  fontSize: 14,
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '${_anggota.length} Anggota',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 20),
-          Text(
-            'DAFTAR ANGGOTA',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: Colors.grey[600],
-              letterSpacing: 1.2,
-            ),
+        ),
+
+        const SizedBox(height: 28),
+
+        Text(
+          'Anggota',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey[800],
           ),
-          const SizedBox(height: 10),
-          ..._anggota.asMap().entries.map((entry) {
-            final idx = entry.key;
-            final anggota = entry.value;
-            return _AnggotaCard(anggota: anggota, nomor: idx + 1);
-          }),
-        ],
-      ),
+        ),
+        const SizedBox(height: 14),
+
+        // Member cards
+        ..._anggota.map((a) => _MemberCard(anggota: a)),
+      ],
     );
   }
 }
 
-class _AnggotaCard extends StatelessWidget {
+class _MemberCard extends StatelessWidget {
   final Anggota anggota;
-  final int nomor;
-
-  const _AnggotaCard({required this.anggota, required this.nomor});
+  const _MemberCard({required this.anggota});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: anggota.color.withOpacity(0.12),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade100),
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            CircleAvatar(
-              radius: 26,
-              backgroundColor: anggota.color.withOpacity(0.12),
-              child: Icon(anggota.icon, color: anggota.color, size: 26),
+      child: Row(
+        children: [
+          // Profile avatar
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: anggota.gradientColors,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              shape: BoxShape.circle,
             ),
-            Positioned(
-              bottom: -2,
-              right: -2,
-              child: Container(
-                width: 20,
-                height: 20,
-                decoration: BoxDecoration(
-                  color: anggota.color,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
+            child: Center(
+              child: Text(
+                anggota.initials,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
                 ),
-                child: Center(
-                  child: Text(
-                    '$nomor',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 14),
+
+          // Info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  anggota.nama,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
                   ),
                 ),
-              ),
-            ),
-          ],
-        ),
-        title: Text(
-          anggota.nama,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 2),
-            Text(
-              'NIM: ${anggota.nim}',
-              style: TextStyle(color: Colors.grey[600], fontSize: 12),
-            ),
-            const SizedBox(height: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                // ignore: deprecated_member_use
-                color: anggota.color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                anggota.peran,
-                style: TextStyle(
-                  color: anggota.color,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
+                const SizedBox(height: 3),
+                Text(
+                  anggota.nim,
+                  style: TextStyle(color: Colors.grey[500], fontSize: 13),
                 ),
+              ],
+            ),
+          ),
+
+          // Role badge
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: anggota.gradientColors[0].withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              anggota.peran,
+              style: TextStyle(
+                color: anggota.gradientColors[0],
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

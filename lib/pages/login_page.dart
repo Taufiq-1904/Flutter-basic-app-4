@@ -24,7 +24,6 @@ class _LoginPageState extends State<LoginPage> {
       _errorMessage = null;
     });
 
-    // Simulasi delay login
     await Future.delayed(const Duration(milliseconds: 600));
 
     final username = _usernameCtrl.text.trim();
@@ -53,83 +52,89 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final primary = Theme.of(context).colorScheme.primary;
     return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 28),
+            padding: const EdgeInsets.symmetric(horizontal: 32),
             child: Form(
               key: _formKey,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Logo / Icon
                   Container(
-                    width: 90,
-                    height: 90,
+                    width: 52,
+                    height: 52,
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.primary,
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: theme.colorScheme.primary.withOpacity(0.35),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
+                      color: primary,
+                      borderRadius: BorderRadius.circular(14),
                     ),
                     child: const Icon(
                       Icons.school_rounded,
                       color: Colors.white,
-                      size: 48,
+                      size: 26,
                     ),
                   ),
-                  const SizedBox(height: 28),
-                  Text(
-                    'Selamat Datang',
-                    style: theme.textTheme.headlineSmall?.copyWith(
+                  const SizedBox(height: 32),
+                  const Text(
+                    'Welcome back',
+                    style: TextStyle(
+                      fontSize: 28,
                       fontWeight: FontWeight.bold,
+                      color: Color(0xFF1E293B),
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 8),
                   Text(
-                    'Silahkan login untuk melanjutkan',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
+                    'Sign in to continue',
+                    style: TextStyle(fontSize: 15, color: Colors.grey[500]),
+                  ),
+                  const SizedBox(height: 40),
+
+                  Text(
+                    'Username',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey[700],
                     ),
                   ),
-                  const SizedBox(height: 36),
-
-                  // Username
+                  const SizedBox(height: 8),
                   TextFormField(
                     controller: _usernameCtrl,
                     decoration: const InputDecoration(
-                      labelText: 'Username',
-                      prefixIcon: Icon(Icons.person_outline_rounded),
-                      hintText: 'Masukkan username',
+                      hintText: 'Enter your username',
                     ),
                     textInputAction: TextInputAction.next,
-                    validator: (val) => (val == null || val.isEmpty)
-                        ? 'Username wajib diisi'
-                        : null,
+                    validator: (val) =>
+                        (val == null || val.isEmpty) ? 'Required' : null,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
 
-                  // Password
+                  Text(
+                    'Password',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   TextFormField(
                     controller: _passwordCtrl,
                     obscureText: _obscurePassword,
                     decoration: InputDecoration(
-                      labelText: 'Password',
-                      prefixIcon: const Icon(Icons.lock_outline_rounded),
-                      hintText: 'Masukkan password',
+                      hintText: 'Enter your password',
                       suffixIcon: IconButton(
                         icon: Icon(
                           _obscurePassword
                               ? Icons.visibility_off_outlined
                               : Icons.visibility_outlined,
+                          size: 20,
+                          color: Colors.grey[400],
                         ),
                         onPressed: () => setState(
                           () => _obscurePassword = !_obscurePassword,
@@ -138,50 +143,49 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     textInputAction: TextInputAction.done,
                     onFieldSubmitted: (_) => _login(),
-                    validator: (val) => (val == null || val.isEmpty)
-                        ? 'Password wajib diisi'
-                        : null,
+                    validator: (val) =>
+                        (val == null || val.isEmpty) ? 'Required' : null,
                   ),
 
-                  // Error message
                   if (_errorMessage != null) ...[
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 16),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 10,
-                      ),
+                      padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: Colors.red.shade50,
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.red.shade200),
                       ),
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.error_outline,
-                            color: Colors.red,
+                            color: Colors.red[400],
                             size: 18,
                           ),
                           const SizedBox(width: 8),
-                          Text(
-                            _errorMessage!,
-                            style: const TextStyle(color: Colors.red),
+                          Expanded(
+                            child: Text(
+                              _errorMessage!,
+                              style: TextStyle(
+                                color: Colors.red[700],
+                                fontSize: 13,
+                              ),
+                            ),
                           ),
                         ],
                       ),
                     ),
                   ],
 
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 32),
 
-                  // Login Button
                   SizedBox(
                     width: double.infinity,
+                    height: 52,
                     child: ElevatedButton(
                       onPressed: _isLoading ? null : _login,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.colorScheme.primary,
+                        backgroundColor: primary,
                         foregroundColor: Colors.white,
                       ),
                       child: _isLoading
@@ -194,7 +198,7 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             )
                           : const Text(
-                              'Login',
+                              'Sign In',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -202,10 +206,12 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Hint: username = admin | password = 123',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                  const SizedBox(height: 20),
+                  Center(
+                    child: Text(
+                      'Hint: admin / 123',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[400]),
+                    ),
                   ),
                 ],
               ),

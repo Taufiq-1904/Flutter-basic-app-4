@@ -7,135 +7,186 @@ import 'stopwatch_page.dart';
 import 'hitung_piramid_page.dart';
 import 'login_page.dart';
 
-class MenuItem {
+class _NavItem {
   final String title;
-  final String subtitle;
   final IconData icon;
-  final Color color;
-  final Widget page;
-
-  const MenuItem({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.color,
-    required this.page,
-  });
+  const _NavItem(this.title, this.icon);
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
-  static final List<MenuItem> _menuItems = [
-    MenuItem(
-      title: 'Data Kelompok',
-      subtitle: 'Info anggota kelompok',
-      icon: Icons.group_rounded,
-      color: const Color(0xFF1565C0),
-      page: const DataKelompokPage(),
-    ),
-    MenuItem(
-      title: 'Penjumlahan & Pengurangan',
-      subtitle: 'Operasi aritmatika dasar',
-      icon: Icons.calculate_rounded,
-      color: const Color(0xFF2E7D32),
-      page: const OperasiHitungPage(),
-    ),
-    MenuItem(
-      title: 'Cek Bilangan',
-      subtitle: 'Ganjil/Genap & Prima',
-      icon: Icons.search_rounded,
-      color: const Color(0xFF6A1B9A),
-      page: const CekBilanganPage(),
-    ),
-    MenuItem(
-      title: 'Jumlah Total Angka',
-      subtitle: 'Hitung total dari banyak angka',
-      icon: Icons.functions_rounded,
-      color: const Color(0xFFE65100),
-      page: const JumlahTotalPage(),
-    ),
-    MenuItem(
-      title: 'Stopwatch',
-      subtitle: 'Pencatat waktu',
-      icon: Icons.timer_rounded,
-      color: const Color(0xFF00695C),
-      page: const StopwatchPage(),
-    ),
-    MenuItem(
-      title: 'Hitung Piramid',
-      subtitle: 'Volume piramid (V = 1/3 × A × t)',
-      icon: Icons.change_history_rounded,
-      color: const Color(0xFFC62828),
-      page: const HitungPiramidPage(),
-    ),
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  int _selectedIndex = 0;
+
+  static const List<_NavItem> _navItems = [
+    _NavItem('Data Kelompok', Icons.home_rounded),
+    _NavItem('Operasi Hitung', Icons.calculate_rounded),
+    _NavItem('Cek Bilangan', Icons.tag_rounded),
+    _NavItem('Jumlah Total', Icons.functions_rounded),
+    _NavItem('Stopwatch', Icons.timer_rounded),
+    _NavItem('Hitung Piramid', Icons.change_history_rounded),
   ];
+
+  Widget _getPage() {
+    switch (_selectedIndex) {
+      case 0:
+        return const DataKelompokPage();
+      case 1:
+        return const OperasiHitungPage();
+      case 2:
+        return const CekBilanganPage();
+      case 3:
+        return const JumlahTotalPage();
+      case 4:
+        return const StopwatchPage();
+      case 5:
+        return const HitungPiramidPage();
+      default:
+        return const DataKelompokPage();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text(
-          'Menu Utama',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          _navItems[_selectedIndex].title,
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
         ),
-        backgroundColor: theme.colorScheme.primary,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          IconButton(
-            tooltip: 'Logout',
-            icon: const Icon(Icons.logout_rounded),
-            onPressed: () => _confirmLogout(context),
-          ),
-        ],
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1E293B),
+        surfaceTintColor: Colors.transparent,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: Colors.grey.shade200),
+        ),
       ),
-      body: Column(
+      drawer: _buildDrawer(context, theme),
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 200),
+        child: KeyedSubtree(key: ValueKey(_selectedIndex), child: _getPage()),
+      ),
+    );
+  }
+
+  Widget _buildDrawer(BuildContext context, ThemeData theme) {
+    return Drawer(
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(),
+      child: Column(
         children: [
-          // Header banner
           Container(
             width: double.infinity,
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + 24,
+              left: 20,
+              right: 20,
+              bottom: 24,
+            ),
             color: theme.colorScheme.primary,
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Halo, Admin! 👋',
-                  style: theme.textTheme.titleLarge?.copyWith(
+                CircleAvatar(
+                  radius: 26,
+                  backgroundColor: Colors.white.withOpacity(0.2),
+                  child: const Icon(
+                    Icons.person,
                     color: Colors.white,
-                    fontWeight: FontWeight.bold,
+                    size: 26,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 14),
+                const Text(
+                  'Admin',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 2),
                 Text(
-                  'Pilih fitur yang ingin digunakan',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: Colors.white70,
+                  'Pemrograman Mobile',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.8),
+                    fontSize: 13,
                   ),
                 ),
               ],
             ),
           ),
-
-          // Grid menu
+          const SizedBox(height: 8),
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: GridView.builder(
-                itemCount: _menuItems.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 1.1,
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              itemCount: _navItems.length,
+              itemBuilder: (context, index) {
+                final item = _navItems[index];
+                final isSelected = _selectedIndex == index;
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 2),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? theme.colorScheme.primary.withOpacity(0.08)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: ListTile(
+                    leading: Icon(
+                      item.icon,
+                      color: isSelected
+                          ? theme.colorScheme.primary
+                          : Colors.grey[600],
+                      size: 22,
+                    ),
+                    title: Text(
+                      item.title,
+                      style: TextStyle(
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.w400,
+                        color: isSelected
+                            ? theme.colorScheme.primary
+                            : const Color(0xFF1E293B),
+                        fontSize: 14,
+                      ),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    onTap: () {
+                      setState(() => _selectedIndex = index);
+                      Navigator.pop(context);
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => _confirmLogout(context),
+                icon: const Icon(Icons.logout_rounded, size: 18),
+                label: const Text('Logout'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.red[600],
+                  side: BorderSide(color: Colors.red.shade200),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-                itemBuilder: (context, index) {
-                  final item = _menuItems[index];
-                  return _MenuCard(item: item);
-                },
               ),
             ),
           ),
@@ -149,15 +200,14 @@ class HomePage extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Konfirmasi Logout'),
+        title: const Text('Logout'),
         content: const Text('Apakah kamu yakin ingin logout?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: const Text('Batal'),
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+          TextButton(
             onPressed: () {
               Navigator.pop(ctx);
               Navigator.pushReplacement(
@@ -165,72 +215,10 @@ class HomePage extends StatelessWidget {
                 MaterialPageRoute(builder: (_) => const LoginPage()),
               );
             },
-            child: const Text('Logout', style: TextStyle(color: Colors.white)),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Logout'),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _MenuCard extends StatelessWidget {
-  final MenuItem item;
-  const _MenuCard({required this.item});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () =>
-          Navigator.push(context, MaterialPageRoute(builder: (_) => item.page)),
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: item.color.withOpacity(0.15),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: item.color.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(item.icon, color: item.color, size: 28),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  item.subtitle,
-                  style: TextStyle(fontSize: 11, color: Colors.grey[600]),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ],
-        ),
       ),
     );
   }
