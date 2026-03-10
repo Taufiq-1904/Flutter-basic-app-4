@@ -1,55 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../theme/cyber_theme.dart';
 import '../widgets/app_widgets.dart';
 
 class CekBilanganPage extends StatefulWidget {
   const CekBilanganPage({super.key});
-
   @override
   State<CekBilanganPage> createState() => _CekBilanganPageState();
 }
 
 class _CekBilanganPageState extends State<CekBilanganPage> {
   final _ctrl = TextEditingController();
-  int? _angka;
-  bool _dihitung = false;
+  int? _num;
 
-  bool _isGanjil(int n) => n % 2 != 0;
-
-  bool _isPrima(int n) {
-    if (n < 2) return false;
-    if (n == 2) return true;
-    if (n % 2 == 0) return false;
-    for (int i = 3; i * i <= n; i += 2) {
-      if (n % i == 0) return false;
+  bool get _isEven => _num != null && _num! % 2 == 0;
+  bool get _isPrime {
+    if (_num == null || _num! < 2) return false;
+    for (int i = 2; i * i <= _num!; i++) {
+      if (_num! % i == 0) return false;
     }
     return true;
   }
 
   void _cek() {
-    final val = int.tryParse(_ctrl.text);
-    if (val == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Masukkan bilangan bulat yang valid!'),
-          backgroundColor: Colors.red,
-        ),
-      );
+    FocusScope.of(context).unfocus();
+    final n = int.tryParse(_ctrl.text.trim());
+    if (n == null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Row(children: [
+          const Icon(Icons.error_outline, color: Cyber.red, size: 16),
+          const SizedBox(width: 8),
+          const Text('// Input harus berupa bilangan bulat',
+              style: TextStyle(color: Cyber.textMain, letterSpacing: 0.5)),
+        ]),
+        backgroundColor: Cyber.panel,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(2),
+            side: BorderSide(color: Cyber.red.withOpacity(0.3))),
+      ));
       return;
     }
-    setState(() {
-      _angka = val;
-      _dihitung = true;
-    });
+    setState(() => _num = n);
   }
 
-  void _reset() {
-    _ctrl.clear();
-    setState(() {
-      _angka = null;
-      _dihitung = false;
-    });
-  }
+  void _reset() => setState(() {
+        _ctrl.clear();
+        _num = null;
+      });
 
   @override
   void dispose() {
@@ -59,251 +57,211 @@ class _CekBilanganPageState extends State<CekBilanganPage> {
 
   @override
   Widget build(BuildContext context) {
-    const color = Color(0xFF6A1B9A);
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Cek Bilangan',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: color,
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
-      backgroundColor: Colors.grey[100],
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            AppCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: color.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(Icons.search_rounded, color: color),
-                      ),
-                      const SizedBox(width: 12),
-                      const Text(
-                        'Masukkan Bilangan',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: _ctrl,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      signed: true,
-                    ),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(RegExp(r'[0-9\-]')),
-                    ],
-                    decoration: InputDecoration(
-                      labelText: 'Masukkan angka',
-                      hintText: 'Contoh: 7, 12, 100',
-                      prefixIcon: const Icon(Icons.tag_rounded),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onChanged: (_) => setState(() => _dihitung = false),
-                    onFieldSubmitted: (_) => _cek(),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: _cek,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: color,
-                            foregroundColor: Colors.white,
-                          ),
-                          icon: const Icon(Icons.search_rounded),
-                          label: const Text('Cek Bilangan'),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      OutlinedButton.icon(
-                        onPressed: _reset,
-                        icon: const Icon(Icons.refresh_rounded),
-                        label: const Text('Reset'),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            if (_dihitung && _angka != null) ...[
-              const SizedBox(height: 16),
-              AppCard(
+    return CyberScaffold(
+      title: 'Cek Bilangan',
+      accent: Cyber.purple,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 60, 16, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // ── Input ──
+              NeonCard(
+                glowColor: Cyber.purple,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: color.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(
-                            Icons.fact_check_rounded,
-                            color: color,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          'Hasil Cek Angka: ${_angka}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
+                    CardHeader(
+                        label: 'NUMBER SCANNER',
+                        icon: Icons.radar_rounded,
+                        color: Cyber.purple),
+                    const SizedBox(height: 18),
+                    _inputLabel('TARGET_NUMBER'),
+                    const SizedBox(height: 6),
+                    TextFormField(
+                      controller: _ctrl,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[\d\-]'))
                       ],
+                      style: const TextStyle(
+                          color: Cyber.textMain, letterSpacing: 1),
+                      decoration: const InputDecoration(
+                        hintText: 'Enter integer...',
+                        prefixIcon: Icon(Icons.tag_rounded),
+                      ),
+                      textInputAction: TextInputAction.done,
+                      onFieldSubmitted: (_) => _cek(),
                     ),
-                    const SizedBox(height: 16),
-
-                    // Ganjil / Genap
-                    _StatusBadge(
-                      label: _isGanjil(_angka!)
-                          ? '${_angka} adalah BILANGAN GANJIL'
-                          : '${_angka} adalah BILANGAN GENAP',
-                      isPositive: _isGanjil(_angka!),
-                      trueColor: const Color(0xFF1565C0),
-                      falseColor: const Color(0xFF2E7D32),
-                      icon: Icons.exposure_neg_1_rounded,
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    // Prima / Bukan Prima
-                    _StatusBadge(
-                      label: _isPrima(_angka!)
-                          ? '${_angka} adalah BILANGAN PRIMA'
-                          : '${_angka} BUKAN bilangan prima',
-                      isPositive: _isPrima(_angka!),
-                      trueColor: const Color(0xFF6A1B9A),
-                      falseColor: Colors.grey.shade700,
-                      icon: Icons.star_rounded,
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Info tambahan
-                    if (!_isPrima(_angka!) && _angka! >= 2) ...[
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'ℹ️ Info Tambahan',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: Colors.grey[700],
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '${_angka} bukan bilangan prima karena memiliki faktor selain 1 dan dirinya sendiri.',
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
+                    const SizedBox(height: 22),
+                    Row(children: [
+                      Expanded(
+                        child: CyberButton(
+                          label: 'ANALYZE',
+                          icon: Icons.search_rounded,
+                          color: Cyber.purple,
+                          onPressed: _cek,
                         ),
                       ),
-                    ],
-                    if (_angka! < 2) ...[
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.orange.shade50,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.orange.shade200),
-                        ),
-                        child: Text(
-                          'ℹ️ Bilangan prima dimulai dari 2. Angka ${_angka} tidak termasuk bilangan prima.',
-                          style: TextStyle(
-                            color: Colors.orange.shade800,
-                            fontSize: 13,
-                          ),
-                        ),
+                      const SizedBox(width: 10),
+                      OutlinedButton.icon(
+                        onPressed: _reset,
+                        icon: const Icon(Icons.refresh_rounded, size: 15),
+                        label: const Text('RESET'),
                       ),
-                    ],
+                    ]),
                   ],
                 ),
               ),
+
+              // ── Results ──
+              if (_num != null) ...[
+                const SizedBox(height: 16),
+
+                // Big number display
+                NeonCard(
+                  glowColor: Cyber.purple,
+                  padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
+                  child: Column(
+                    children: [
+                      Text('SCANNED VALUE',
+                          style: TextStyle(
+                              color: Cyber.textDim,
+                              fontSize: 9,
+                              letterSpacing: 2,
+                              fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 8),
+                      HudCorners(
+                        color: Cyber.purple,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 30, vertical: 10),
+                          child: Text('$_num',
+                              style: TextStyle(
+                                  color: Cyber.purple,
+                                  fontSize: 40,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 3)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Analysis badges
+                Row(children: [
+                  Expanded(
+                      child:
+                          _Badge(label: 'PARITY', value: _isEven ? 'GENAP' : 'GANJIL', color: _isEven ? Cyber.cyan : Cyber.orange, icon: _isEven ? Icons.view_stream_rounded : Icons.view_column_rounded)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                      child:
+                          _Badge(label: 'PRIMALITY', value: _isPrime ? 'PRIMA' : 'BUKAN PRIMA', color: _isPrime ? Cyber.green : Cyber.red, icon: _isPrime ? Icons.verified_rounded : Icons.cancel_rounded)),
+                ]),
+                const SizedBox(height: 12),
+
+                // Detail results
+                NeonCard(
+                  glowColor: Cyber.purple,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CardHeader(
+                          label: 'ANALYSIS REPORT',
+                          icon: Icons.description_rounded,
+                          color: Cyber.purple),
+                      const SizedBox(height: 14),
+                      ResultTile(
+                          label: 'Bilangan',
+                          value: '$_num',
+                          color: Cyber.purple),
+                      ResultTile(
+                          label: 'Ganjil / Genap',
+                          value: _isEven ? 'Genap' : 'Ganjil',
+                          color: _isEven ? Cyber.cyan : Cyber.orange),
+                      ResultTile(
+                          label: 'Bilangan Prima',
+                          value: _isPrime ? 'Ya' : 'Tidak',
+                          color: _isPrime ? Cyber.green : Cyber.red),
+                      if (_num! > 0) ResultTile(
+                          label: 'Positif / Negatif',
+                          value: 'Positif',
+                          color: Cyber.green)
+                      else if (_num! < 0) ResultTile(
+                          label: 'Positif / Negatif',
+                          value: 'Negatif',
+                          color: Cyber.red)
+                      else ResultTile(
+                          label: 'Positif / Negatif',
+                          value: 'Nol',
+                          color: Cyber.textDim),
+                    ],
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
   }
+
+  Widget _inputLabel(String t) => Text(t,
+      style: TextStyle(
+          color: Cyber.purple,
+          fontSize: 9,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 2));
 }
 
-class _StatusBadge extends StatelessWidget {
-  final String label;
-  final bool isPositive;
-  final Color trueColor;
-  final Color falseColor;
+// ── Badge card ─────────────────────────────────────────────────────────────────
+class _Badge extends StatelessWidget {
+  final String label, value;
+  final Color color;
   final IconData icon;
-
-  const _StatusBadge({
-    required this.label,
-    required this.isPositive,
-    required this.trueColor,
-    required this.falseColor,
-    required this.icon,
-  });
+  const _Badge(
+      {required this.label,
+      required this.value,
+      required this.color,
+      required this.icon});
 
   @override
   Widget build(BuildContext context) {
-    final color = isPositive ? trueColor : falseColor;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Row(
+    return NeonCard(
+      glowColor: color,
+      padding: const EdgeInsets.all(14),
+      child: Column(
         children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
-              ),
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              shape: BoxShape.circle,
+              border: Border.all(color: color.withOpacity(0.3)),
+              boxShadow: [
+                BoxShadow(color: color.withOpacity(0.15), blurRadius: 8)
+              ],
             ),
+            child: Icon(icon, color: color, size: 18),
           ),
-          Icon(
-            isPositive ? Icons.check_circle_rounded : Icons.cancel_rounded,
-            color: color,
-            size: 20,
-          ),
+          const SizedBox(height: 10),
+          Text(label,
+              style: TextStyle(
+                  color: Cyber.textDim,
+                  fontSize: 8,
+                  letterSpacing: 1.5,
+                  fontWeight: FontWeight.w700)),
+          const SizedBox(height: 4),
+          Text(value,
+              style: TextStyle(
+                  color: color,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1),
+              textAlign: TextAlign.center),
         ],
       ),
     );

@@ -1,374 +1,360 @@
-import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import '../theme/cyber_theme.dart';
 
 class StopwatchPage extends StatefulWidget {
   const StopwatchPage({super.key});
-
   @override
   State<StopwatchPage> createState() => _StopwatchPageState();
 }
 
 class _StopwatchPageState extends State<StopwatchPage>
     with SingleTickerProviderStateMixin {
-  Timer? _timer;
-  int _milliseconds = 0;
-  bool _isRunning = false;
-  final List<String> _laps = [];
-  late AnimationController _animController;
+  final Stopwatch _sw = Stopwatch();
+  late AnimationController _ringCtrl;
+  final List<Duration> _laps = [];
+  Duration _display = Duration.zero;
 
   @override
   void initState() {
     super.initState();
-    _animController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 1),
-    )..repeat();
+    _ringCtrl = AnimationController(
+        vsync: this, duration: const Duration(seconds: 1))
+      ..addListener(_tick)
+      ..repeat();
   }
 
-  void _start() {
-    _timer = Timer.periodic(const Duration(milliseconds: 10), (_) {
-      setState(() => _milliseconds += 10);
-    });
-    setState(() => _isRunning = true);
+  void _tick() {
+    if (_sw.isRunning) setState(() => _display = _sw.elapsed);
   }
 
-  void _stop() {
-    _timer?.cancel();
-    setState(() => _isRunning = false);
+  void _startStop() {
+    if (_sw.isRunning) {
+      _sw.stop();
+    } else {
+      _sw.start();
+    }
+    setState(() {});
+  }
+
+  void _lap() {
+    if (_sw.isRunning) {
+      setState(() => _laps.insert(0, _sw.elapsed));
+    }
   }
 
   void _reset() {
-    _timer?.cancel();
+    _sw.stop();
+    _sw.reset();
     setState(() {
-      _milliseconds = 0;
-      _isRunning = false;
+      _display = Duration.zero;
       _laps.clear();
     });
   }
 
-  void _addLap() {
-    setState(() {
-      _laps.insert(0, _formatTime(_milliseconds));
-    });
-  }
-
-  String _formatTime(int ms) {
-    final minutes = (ms ~/ 60000).toString().padLeft(2, '0');
-    final seconds = ((ms % 60000) ~/ 1000).toString().padLeft(2, '0');
-    final centiseconds = ((ms % 1000) ~/ 10).toString().padLeft(2, '0');
-    return '$minutes:$seconds.$centiseconds';
-  }
-
   @override
   void dispose() {
-    _timer?.cancel();
-    _animController.dispose();
+    _ringCtrl.removeListener(_tick);
+    _ringCtrl.dispose();
+    _sw.stop();
     super.dispose();
+  }
+
+  String _fmtDuration(Duration d) {
+    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    final ms =
+        (d.inMilliseconds.remainder(1000) ~/ 10).toString().padLeft(2, '0');
+    return '$m:$s.$ms';
   }
 
   @override
   Widget build(BuildContext context) {
-    const color = Color(0xFF00695C);
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Stopwatch',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: color,
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
-      backgroundColor: Colors.grey[100],
-      body: Column(
-        children: [
-          // Timer display
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 40),
-            decoration: const BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(32)),
-            ),
-            child: Column(
-              children: [
-                // Animated ring
-                Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    SizedBox(
-                      width: 200,
-                      height: 200,
-                      child: _isRunning
-                          ? AnimatedBuilder(
-                              animation: _animController,
-                              builder: (_, __) => CircularProgressIndicator(
-                                value: (_milliseconds % 60000) / 60000,
-                                strokeWidth: 6,
-                                backgroundColor: Colors.white.withOpacity(0.2),
-                                color: Colors.white,
-                              ),
-                            )
-                          : CircularProgressIndicator(
-                              value: (_milliseconds % 60000) / 60000,
-                              strokeWidth: 6,
-                              backgroundColor: Colors.white.withOpacity(0.2),
-                              color: Colors.white,
-                            ),
-                    ),
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          _formatTime(_milliseconds),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 38,
-                            fontWeight: FontWeight.bold,
-                            fontFeatures: [FontFeature.tabularFigures()],
-                            letterSpacing: 2,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _isRunning ? 'Berjalan...' : 'Berhenti',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.75),
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 28),
+    final running = _sw.isRunning;
+    final secs = _display.inMilliseconds / 1000.0;
+    final frac = (secs % 60) / 60.0; // 0‑1 for the sweep
 
-                // Control buttons
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Reset
-                    _CircleButton(
-                      icon: Icons.refresh_rounded,
-                      label: 'Reset',
-                      onPressed: _reset,
-                      backgroundColor: Colors.white.withOpacity(0.15),
-                      foregroundColor: Colors.white,
-                    ),
-                    const SizedBox(width: 16),
+    return CyberScaffold(
+      title: 'Stopwatch',
+      accent: Cyber.yellow,
+      body: SafeArea(
+        child: Column(
+          children: [
+            const SizedBox(height: 60),
 
-                    // Start / Stop
-                    _CircleButton(
-                      icon: _isRunning
-                          ? Icons.pause_rounded
-                          : Icons.play_arrow_rounded,
-                      label: _isRunning ? 'Stop' : 'Start',
-                      onPressed: _isRunning ? _stop : _start,
-                      backgroundColor: Colors.white,
-                      foregroundColor: color,
-                      large: true,
-                    ),
-
-                    const SizedBox(width: 16),
-
-                    // Lap
-                    _CircleButton(
-                      icon: Icons.flag_rounded,
-                      label: 'Lap',
-                      onPressed: _isRunning ? _addLap : null,
-                      backgroundColor: Colors.white.withOpacity(0.15),
-                      foregroundColor: Colors.white,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          // Lap list
-          Expanded(
-            child: _laps.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.flag_outlined,
-                          size: 48,
-                          color: Colors.grey[400],
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Tekan Lap saat stopwatch berjalan\nuntuk mencatat waktu',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : Column(
+            // ── Timer ring ──
+            SizedBox(
+              width: 240,
+              height: 240,
+              child: CustomPaint(
+                painter: _RingPainter(
+                    progress: frac,
+                    color: running ? Cyber.yellow : Cyber.textDim),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'CATATAN LAP',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.grey[600],
-                                letterSpacing: 1.2,
-                              ),
-                            ),
-                            Text(
-                              '${_laps.length} lap',
-                              style: TextStyle(
-                                color: Colors.grey[500],
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
+                      Text(
+                        _fmtDuration(_display),
+                        style: TextStyle(
+                          color:
+                              running ? Cyber.yellow : Cyber.textMain,
+                          fontSize: 34,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 2,
                         ),
                       ),
-                      Expanded(
-                        child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          itemCount: _laps.length,
-                          itemBuilder: (ctx, i) {
-                            final lapNum = _laps.length - i;
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 8),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.04),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Container(
-                                        width: 32,
-                                        height: 32,
-                                        decoration: BoxDecoration(
-                                          color: color.withOpacity(0.1),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            '$lapNum',
-                                            style: const TextStyle(
-                                              color: color,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 13,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Text(
-                                        'Lap $lapNum',
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  Text(
-                                    _laps[i],
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                      fontFeatures: [
-                                        FontFeature.tabularFigures(),
-                                      ],
-                                      color: color,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
+                      const SizedBox(height: 6),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          StatusDot(
+                              color: running ? Cyber.green : Cyber.red),
+                          const SizedBox(width: 6),
+                          Text(
+                            running ? 'RUNNING' : 'STOPPED',
+                            style: TextStyle(
+                                color: running ? Cyber.green : Cyber.red,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 2),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-          ),
-        ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 28),
+
+            // ── Controls ──
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Row(
+                children: [
+                  // Reset
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _reset,
+                      icon: const Icon(Icons.stop_rounded, size: 16),
+                      label: const Text('RESET'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Cyber.red,
+                        side: BorderSide(color: Cyber.red.withOpacity(0.3)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  // Start / Pause
+                  Expanded(
+                    flex: 2,
+                    child: CyberButton(
+                      label: running ? 'PAUSE' : 'START',
+                      icon: running
+                          ? Icons.pause_rounded
+                          : Icons.play_arrow_rounded,
+                      color: running ? Cyber.orange : Cyber.yellow,
+                      onPressed: _startStop,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  // Lap
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: running ? _lap : null,
+                      icon: const Icon(Icons.flag_rounded, size: 16),
+                      label: const Text('LAP'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Cyber.cyan,
+                        side: BorderSide(
+                            color: running
+                                ? Cyber.cyan.withOpacity(0.3)
+                                : Cyber.border),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // ── Laps ──
+            if (_laps.isNotEmpty) ...[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(children: [
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Cyber.cyan.withOpacity(0.08),
+                      border:
+                          Border.all(color: Cyber.cyan.withOpacity(0.25)),
+                    ),
+                    child: Text('LAP LOG  [${_laps.length}]',
+                        style: TextStyle(
+                            color: Cyber.cyan,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 2)),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                      child:
+                          NeonDivider(color: Cyber.cyan.withOpacity(0.25))),
+                ]),
+              ),
+              const SizedBox(height: 8),
+            ],
+
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: _laps.length,
+                itemBuilder: (_, i) {
+                  final lapNum = _laps.length - i;
+                  final diff = i == _laps.length - 1
+                      ? _laps[i]
+                      : _laps[i] - _laps[i + 1];
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 6),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Cyber.panel,
+                      border: Border(
+                          left: BorderSide(
+                              color: Cyber.cyan.withOpacity(0.4), width: 2)),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            color: Cyber.cyan.withOpacity(0.1),
+                            border: Border.all(
+                                color: Cyber.cyan.withOpacity(0.2)),
+                          ),
+                          child: Center(
+                              child: Text('$lapNum',
+                                  style: TextStyle(
+                                      color: Cyber.cyan,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w800))),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(_fmtDuration(_laps[i]),
+                              style: const TextStyle(
+                                  color: Cyber.textMain,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 1)),
+                        ),
+                        Text('+${_fmtDuration(diff)}',
+                            style: TextStyle(
+                                color: Cyber.yellow,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.5)),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _CircleButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback? onPressed;
-  final Color backgroundColor;
-  final Color foregroundColor;
-  final bool large;
-
-  const _CircleButton({
-    required this.icon,
-    required this.label,
-    required this.onPressed,
-    required this.backgroundColor,
-    required this.foregroundColor,
-    this.large = false,
-  });
+// ── Neon ring painter ──────────────────────────────────────────────────────────
+class _RingPainter extends CustomPainter {
+  final double progress;
+  final Color color;
+  _RingPainter({required this.progress, required this.color});
 
   @override
-  Widget build(BuildContext context) {
-    final size = large ? 72.0 : 54.0;
-    final iconSize = large ? 32.0 : 24.0;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Material(
-          color: onPressed == null
-              ? backgroundColor.withOpacity(0.5)
-              : backgroundColor,
-          shape: const CircleBorder(),
-          elevation: large ? 4 : 0,
-          child: InkWell(
-            onTap: onPressed,
-            customBorder: const CircleBorder(),
-            child: SizedBox(
-              width: size,
-              height: size,
-              child: Icon(
-                icon,
-                color: onPressed == null
-                    ? foregroundColor.withOpacity(0.5)
-                    : foregroundColor,
-                size: iconSize,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          label,
-          style: TextStyle(color: Colors.white.withOpacity(0.85), fontSize: 12),
-        ),
-      ],
-    );
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2 - 12;
+
+    // Track
+    canvas.drawCircle(
+        center,
+        radius,
+        Paint()
+          ..color = Cyber.border
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2);
+
+    // Tick marks
+    final tickPaint = Paint()
+      ..color = Cyber.textDim.withOpacity(0.3)
+      ..strokeWidth = 1;
+    for (int i = 0; i < 60; i++) {
+      final angle = (i / 60) * 2 * math.pi - math.pi / 2;
+      final outer = Offset(
+          center.dx + radius * math.cos(angle),
+          center.dy + radius * math.sin(angle));
+      final inner = Offset(
+          center.dx + (radius - (i % 5 == 0 ? 8 : 4)) * math.cos(angle),
+          center.dy + (radius - (i % 5 == 0 ? 8 : 4)) * math.sin(angle));
+      canvas.drawLine(inner, outer,
+          i % 5 == 0 ? (tickPaint..strokeWidth = 1.5) : (tickPaint..strokeWidth = 0.5));
+    }
+
+    // Progress arc
+    final sweepAngle = progress * 2 * math.pi;
+    final arcRect = Rect.fromCircle(center: center, radius: radius);
+
+    // Glow
+    canvas.drawArc(
+        arcRect,
+        -math.pi / 2,
+        sweepAngle,
+        false,
+        Paint()
+          ..color = color.withOpacity(0.15)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 6
+          ..maskFilter = const MaskFilter.blur(BlurStyle.outer, 8));
+
+    // Arc
+    canvas.drawArc(
+        arcRect,
+        -math.pi / 2,
+        sweepAngle,
+        false,
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3
+          ..strokeCap = StrokeCap.round);
+
+    // Dot at end
+    if (progress > 0) {
+      final endAngle = -math.pi / 2 + sweepAngle;
+      final dotPos = Offset(
+          center.dx + radius * math.cos(endAngle),
+          center.dy + radius * math.sin(endAngle));
+      canvas.drawCircle(dotPos, 4, Paint()..color = color);
+      canvas.drawCircle(
+          dotPos,
+          7,
+          Paint()
+            ..color = color.withOpacity(0.3)
+            ..maskFilter = const MaskFilter.blur(BlurStyle.outer, 4));
+    }
   }
+
+  @override
+  bool shouldRepaint(covariant _RingPainter o) =>
+      o.progress != progress || o.color != color;
 }

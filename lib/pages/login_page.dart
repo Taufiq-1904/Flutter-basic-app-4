@@ -1,213 +1,269 @@
 import 'package:flutter/material.dart';
+import '../theme/cyber_theme.dart';
 import 'home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
-
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-  final _usernameCtrl = TextEditingController();
-  final _passwordCtrl = TextEditingController();
-  bool _obscurePassword = true;
-  bool _isLoading = false;
-  String? _errorMessage;
+  final _userCtrl = TextEditingController();
+  final _passCtrl = TextEditingController();
+  bool _obscure = true;
+  bool _loading = false;
+  String? _error;
+
+  late AnimationController _fadeCtrl;
+  late AnimationController _pulseCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _fadeCtrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 1200))
+      ..forward();
+    _pulseCtrl = AnimationController(
+        vsync: this, duration: const Duration(seconds: 2))
+      ..repeat(reverse: true);
+  }
 
   void _login() async {
     if (!_formKey.currentState!.validate()) return;
-
     setState(() {
-      _isLoading = true;
-      _errorMessage = null;
+      _loading = true;
+      _error = null;
     });
-
-    // Simulasi delay login
-    await Future.delayed(const Duration(milliseconds: 600));
-
-    final username = _usernameCtrl.text.trim();
-    final password = _passwordCtrl.text.trim();
-
-    if (username == 'admin' && password == '123') {
-      if (!mounted) return;
+    await Future.delayed(const Duration(milliseconds: 800));
+    if (!mounted) return;
+    if (_userCtrl.text.trim() == 'admin' && _passCtrl.text.trim() == '123') {
       Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomePage()),
-      );
+          context,
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => const HomePage(),
+            transitionsBuilder: (_, a, __, c) =>
+                FadeTransition(opacity: a, child: c),
+            transitionDuration: const Duration(milliseconds: 500),
+          ));
     } else {
       setState(() {
-        _isLoading = false;
-        _errorMessage = 'Username atau password salah!';
+        _loading = false;
+        _error = 'ACCESS DENIED // Invalid credentials';
       });
     }
   }
 
   @override
   void dispose() {
-    _usernameCtrl.dispose();
-    _passwordCtrl.dispose();
+    _fadeCtrl.dispose();
+    _pulseCtrl.dispose();
+    _userCtrl.dispose();
+    _passCtrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
+    return CyberScaffold(
+      showBack: false,
+      accent: Cyber.cyan,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 28),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Logo / Icon
-                  Container(
-                    width: 90,
-                    height: 90,
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primary,
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: theme.colorScheme.primary.withOpacity(0.35),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.school_rounded,
-                      color: Colors.white,
-                      size: 48,
-                    ),
-                  ),
-                  const SizedBox(height: 28),
-                  Text(
-                    'Selamat Datang',
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Silahkan login untuk melanjutkan',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  const SizedBox(height: 36),
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: FadeTransition(
+              opacity: CurvedAnimation(
+                  parent: _fadeCtrl, curve: Curves.easeOut),
+              child: SlideTransition(
+                position: Tween<Offset>(
+                        begin: const Offset(0, 0.06), end: Offset.zero)
+                    .animate(CurvedAnimation(
+                        parent: _fadeCtrl, curve: Curves.easeOutCubic)),
+                child: Column(
+                  children: [
+                    // ── Terminal header ──
+                    TypingText(
+                        text: '> INITIALIZING SECURE TERMINAL v3.0.26...'),
+                    const SizedBox(height: 28),
 
-                  // Username
-                  TextFormField(
-                    controller: _usernameCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Username',
-                      prefixIcon: Icon(Icons.person_outline_rounded),
-                      hintText: 'Masukkan username',
-                    ),
-                    textInputAction: TextInputAction.next,
-                    validator: (val) => (val == null || val.isEmpty)
-                        ? 'Username wajib diisi'
-                        : null,
-                  ),
-                  const SizedBox(height: 16),
+                    // ── Glitch title ──
+                    const GlitchText(text: 'LOGIN'),
+                    const SizedBox(height: 6),
+                    Text('// AUTHENTICATION REQUIRED',
+                        style: TextStyle(
+                            color: Cyber.textDim,
+                            fontSize: 11,
+                            letterSpacing: 2.5)),
+                    const SizedBox(height: 36),
 
-                  // Password
-                  TextFormField(
-                    controller: _passwordCtrl,
-                    obscureText: _obscurePassword,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      prefixIcon: const Icon(Icons.lock_outline_rounded),
-                      hintText: 'Masukkan password',
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
+                    // ── Login panel ──
+                    HudCorners(
+                      color: Cyber.cyan,
+                      child: AnimatedBuilder(
+                        animation: _pulseCtrl,
+                        builder: (_, child) => Container(
+                          decoration: BoxDecoration(boxShadow: [
+                            BoxShadow(
+                              color: Cyber.cyan.withOpacity(
+                                  0.03 + _pulseCtrl.value * 0.04),
+                              blurRadius: 30,
+                              spreadRadius: -4,
+                            ),
+                          ]),
+                          child: child,
                         ),
-                        onPressed: () => setState(
-                          () => _obscurePassword = !_obscurePassword,
+                        child: NeonCard(
+                          glowColor: Cyber.cyan,
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Panel header bar
+                                Row(children: [
+                                  const StatusDot(color: Cyber.green),
+                                  const SizedBox(width: 8),
+                                  Text('CREDENTIALS INPUT',
+                                      style: TextStyle(
+                                          color: Cyber.textDim,
+                                          fontSize: 9,
+                                          letterSpacing: 2,
+                                          fontWeight: FontWeight.w700)),
+                                  const Spacer(),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Cyber.cyan.withOpacity(0.08),
+                                      border: Border.all(
+                                          color: Cyber.cyan.withOpacity(0.2)),
+                                    ),
+                                    child: Text('SECURE',
+                                        style: TextStyle(
+                                            color: Cyber.cyan,
+                                            fontSize: 8,
+                                            fontWeight: FontWeight.w800,
+                                            letterSpacing: 1.5)),
+                                  ),
+                                ]),
+                                const SizedBox(height: 8),
+                                const NeonDivider(),
+                                const SizedBox(height: 20),
+
+                                // USERNAME
+                                _label('USER_ID'),
+                                const SizedBox(height: 6),
+                                TextFormField(
+                                  controller: _userCtrl,
+                                  style: const TextStyle(
+                                      color: Cyber.textMain, letterSpacing: 1),
+                                  decoration: const InputDecoration(
+                                    hintText: 'Enter username...',
+                                    prefixIcon:
+                                        Icon(Icons.person_outline_rounded),
+                                  ),
+                                  textInputAction: TextInputAction.next,
+                                  validator: (v) =>
+                                      (v == null || v.isEmpty) ? 'Required' : null,
+                                ),
+                                const SizedBox(height: 18),
+
+                                // PASSWORD
+                                _label('ACCESS_KEY'),
+                                const SizedBox(height: 6),
+                                TextFormField(
+                                  controller: _passCtrl,
+                                  obscureText: _obscure,
+                                  style: const TextStyle(
+                                      color: Cyber.textMain, letterSpacing: 1),
+                                  decoration: InputDecoration(
+                                    hintText: 'Enter password...',
+                                    prefixIcon:
+                                        const Icon(Icons.lock_outline_rounded),
+                                    suffixIcon: IconButton(
+                                      icon: Icon(
+                                          _obscure
+                                              ? Icons.visibility_off_outlined
+                                              : Icons.visibility_outlined,
+                                          color: Cyber.textDim,
+                                          size: 18),
+                                      onPressed: () =>
+                                          setState(() => _obscure = !_obscure),
+                                    ),
+                                  ),
+                                  textInputAction: TextInputAction.done,
+                                  onFieldSubmitted: (_) => _login(),
+                                  validator: (v) =>
+                                      (v == null || v.isEmpty) ? 'Required' : null,
+                                ),
+
+                                // ERROR
+                                if (_error != null) ...[
+                                  const SizedBox(height: 16),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 10),
+                                    decoration: BoxDecoration(
+                                      color: Cyber.red.withOpacity(0.06),
+                                      border: const Border(
+                                          left: BorderSide(
+                                              color: Cyber.red, width: 2)),
+                                    ),
+                                    child: Row(children: [
+                                      const Icon(Icons.warning_amber_rounded,
+                                          color: Cyber.red, size: 16),
+                                      const SizedBox(width: 8),
+                                      Flexible(
+                                          child: Text(_error!,
+                                              style: const TextStyle(
+                                                  color: Cyber.red,
+                                                  fontSize: 12,
+                                                  letterSpacing: 0.5))),
+                                    ]),
+                                  ),
+                                ],
+                                const SizedBox(height: 24),
+
+                                // LOGIN BUTTON
+                                CyberButton(
+                                  label: _loading
+                                      ? 'AUTHENTICATING...'
+                                      : 'INITIALIZE LOGIN',
+                                  icon: _loading ? null : Icons.login_rounded,
+                                  onPressed: _loading ? null : _login,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                    textInputAction: TextInputAction.done,
-                    onFieldSubmitted: (_) => _login(),
-                    validator: (val) => (val == null || val.isEmpty)
-                        ? 'Password wajib diisi'
-                        : null,
-                  ),
+                    const SizedBox(height: 28),
 
-                  // Error message
-                  if (_errorMessage != null) ...[
-                    const SizedBox(height: 14),
+                    // ── Hint ──
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 10,
-                      ),
+                          horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
-                        color: Colors.red.shade50,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.red.shade200),
-                      ),
+                          border: Border.all(color: Cyber.border)),
                       child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(
-                            Icons.error_outline,
-                            color: Colors.red,
-                            size: 18,
-                          ),
+                          Icon(Icons.info_outline_rounded,
+                              color: Cyber.textDim, size: 14),
                           const SizedBox(width: 8),
-                          Text(
-                            _errorMessage!,
-                            style: const TextStyle(color: Colors.red),
-                          ),
+                          Text('user: admin  //  key: 123',
+                              style: TextStyle(
+                                  color: Cyber.textDim,
+                                  fontSize: 11,
+                                  letterSpacing: 1)),
                         ],
                       ),
                     ),
                   ],
-
-                  const SizedBox(height: 28),
-
-                  // Login Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _login,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.colorScheme.primary,
-                        foregroundColor: Colors.white,
-                      ),
-                      child: _isLoading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text(
-                              'Login',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Hint: username = admin | password = 123',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[500]),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
@@ -215,4 +271,11 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
+
+  Widget _label(String t) => Text(t,
+      style: TextStyle(
+          color: Cyber.cyan,
+          fontSize: 9,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 2));
 }

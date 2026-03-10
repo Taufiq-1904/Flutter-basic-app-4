@@ -1,79 +1,56 @@
 import 'package:flutter/material.dart';
+import '../theme/cyber_theme.dart';
 import '../widgets/app_widgets.dart';
 
 class JumlahTotalPage extends StatefulWidget {
   const JumlahTotalPage({super.key});
-
   @override
   State<JumlahTotalPage> createState() => _JumlahTotalPageState();
 }
 
 class _JumlahTotalPageState extends State<JumlahTotalPage> {
   final _ctrl = TextEditingController();
-  double? _total;
-  List<double> _angkaList = [];
-  bool _dihitung = false;
+  List<double>? _nums;
 
   void _hitung() {
-    final input = _ctrl.text.trim();
-    if (input.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Masukkan setidaknya satu angka!'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    // Pisahkan dengan spasi atau koma
-    final parts = input
-        .split(RegExp(r'[\s,]+'))
-        .where((s) => s.isNotEmpty)
-        .toList();
-
-    final List<double> parsed = [];
-    final List<String> invalid = [];
-
+    FocusScope.of(context).unfocus();
+    final raw = _ctrl.text.trim();
+    if (raw.isEmpty) return;
+    final parts =
+        raw.split(RegExp(r'[,;\s]+')).where((s) => s.isNotEmpty).toList();
+    final parsed = <double>[];
     for (final p in parts) {
-      final val = double.tryParse(p);
-      if (val != null) {
-        parsed.add(val);
-      } else {
-        invalid.add(p);
+      final n = double.tryParse(p.replaceAll(',', '.'));
+      if (n == null) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Row(children: [
+            const Icon(Icons.error_outline, color: Cyber.red, size: 16),
+            const SizedBox(width: 8),
+            Text('// "$p" bukan angka valid',
+                style:
+                    const TextStyle(color: Cyber.textMain, letterSpacing: 0.5)),
+          ]),
+          backgroundColor: Cyber.panel,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(2),
+              side: BorderSide(color: Cyber.red.withOpacity(0.3))),
+        ));
+        return;
       }
+      parsed.add(n);
     }
-
-    if (invalid.isNotEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Input tidak valid: ${invalid.join(', ')}'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      if (parsed.isEmpty) return;
-    }
-
-    setState(() {
-      _angkaList = parsed;
-      _total = parsed.fold<double>(0.0, (sum, val) => sum + val);
-      _dihitung = true;
-    });
+    setState(() => _nums = parsed);
   }
 
-  void _reset() {
-    _ctrl.clear();
-    setState(() {
-      _total = null;
-      _angkaList = [];
-      _dihitung = false;
-    });
-  }
+  void _reset() => setState(() {
+        _ctrl.clear();
+        _nums = null;
+      });
 
-  String _formatAngka(double val) {
-    if (val == val.truncateToDouble()) return val.toInt().toString();
-    return val.toStringAsFixed(4).replaceAll(RegExp(r'0+$'), '');
-  }
+  String _fmt(double v) => v == v.roundToDouble()
+      ? v.toStringAsFixed(0)
+      : v.toStringAsFixed(4).replaceAll(RegExp(r'0+$'), '');
 
   @override
   void dispose() {
@@ -83,270 +60,216 @@ class _JumlahTotalPageState extends State<JumlahTotalPage> {
 
   @override
   Widget build(BuildContext context) {
-    const color = Color(0xFFE65100);
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Jumlah Total Angka',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: color,
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
-      backgroundColor: Colors.grey[100],
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            AppCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: color.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(
-                          Icons.functions_rounded,
-                          color: color,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      const Text(
-                        'Masukkan Angka-Angka',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Pisahkan angka dengan spasi atau koma',
-                    style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _ctrl,
-                    maxLines: 3,
-                    keyboardType: TextInputType.multiline,
-                    decoration: InputDecoration(
-                      labelText: 'Daftar angka',
-                      hintText: 'Contoh: 10 20 30 atau 10, 20, 30',
-                      alignLabelWithHint: true,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    onChanged: (_) => setState(() => _dihitung = false),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: _hitung,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: color,
-                            foregroundColor: Colors.white,
-                          ),
-                          icon: const Icon(Icons.add_circle_outline_rounded),
-                          label: const Text('Hitung Total'),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      OutlinedButton.icon(
-                        onPressed: _reset,
-                        icon: const Icon(Icons.refresh_rounded),
-                        label: const Text('Reset'),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            if (_dihitung && _total != null) ...[
-              const SizedBox(height: 16),
-              AppCard(
+    final total = _nums?.fold<double>(0, (s, e) => s + e);
+    final min = _nums != null
+        ? _nums!.reduce((a, b) => a < b ? a : b)
+        : null;
+    final max = _nums != null
+        ? _nums!.reduce((a, b) => a > b ? a : b)
+        : null;
+
+    return CyberScaffold(
+      title: 'Jumlah Total',
+      accent: Cyber.orange,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 60, 16, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // ── Input ──
+              NeonCard(
+                glowColor: Cyber.orange,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: color.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(
-                            Icons.bar_chart_rounded,
-                            color: color,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        const Text(
-                          'Hasil Perhitungan',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Stats row
-                    Row(
-                      children: [
-                        _StatBox(
-                          label: 'Jumlah Data',
-                          value: '${_angkaList.length}',
-                          color: color,
-                        ),
-                        const SizedBox(width: 10),
-                        _StatBox(
-                          label: 'Nilai Min',
-                          value: _formatAngka(
-                            _angkaList.reduce((a, b) => a < b ? a : b),
-                          ),
-                          color: const Color(0xFF1565C0),
-                        ),
-                        const SizedBox(width: 10),
-                        _StatBox(
-                          label: 'Nilai Max',
-                          value: _formatAngka(
-                            _angkaList.reduce((a, b) => a > b ? a : b),
-                          ),
-                          color: const Color(0xFF2E7D32),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    // Total
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            color.withOpacity(0.12),
-                            color.withOpacity(0.05),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: color.withOpacity(0.3)),
+                    CardHeader(
+                        label: 'DATA STREAM',
+                        icon: Icons.dataset_rounded,
+                        color: Cyber.orange),
+                    const SizedBox(height: 18),
+                    _inputLabel('DATA_INPUT'),
+                    const SizedBox(height: 6),
+                    TextFormField(
+                      controller: _ctrl,
+                      style: const TextStyle(
+                          color: Cyber.textMain, letterSpacing: 1),
+                      decoration: const InputDecoration(
+                        hintText: 'e.g. 10 20 30  or  10,20,30',
+                        prefixIcon: Icon(Icons.numbers_rounded),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'TOTAL KESELURUHAN',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 14,
-                            ),
-                          ),
-                          Text(
-                            _formatAngka(_total!),
-                            style: TextStyle(
-                              color: color,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 24,
-                            ),
-                          ),
-                        ],
-                      ),
+                      maxLines: 3,
+                      minLines: 1,
                     ),
-
-                    if (_angkaList.isNotEmpty) ...[
-                      const SizedBox(height: 16),
-                      const SectionTitle('ANGKA YANG DIPROSES'),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: _angkaList.map((val) {
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: color.withOpacity(0.08),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: color.withOpacity(0.25),
-                              ),
-                            ),
-                            child: Text(
-                              _formatAngka(val),
-                              style: TextStyle(
-                                color: color,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          );
-                        }).toList(),
+                    const SizedBox(height: 8),
+                    Text('// Pisahkan angka dengan spasi, koma, atau titik koma',
+                        style: TextStyle(
+                            color: Cyber.textDim,
+                            fontSize: 10,
+                            letterSpacing: 0.3)),
+                    const SizedBox(height: 18),
+                    Row(children: [
+                      Expanded(
+                        child: CyberButton(
+                          label: 'CALCULATE',
+                          icon: Icons.functions_rounded,
+                          color: Cyber.orange,
+                          onPressed: _hitung,
+                        ),
                       ),
-                    ],
+                      const SizedBox(width: 10),
+                      OutlinedButton.icon(
+                        onPressed: _reset,
+                        icon: const Icon(Icons.refresh_rounded, size: 15),
+                        label: const Text('RESET'),
+                      ),
+                    ]),
                   ],
                 ),
               ),
+
+              // ── Results ──
+              if (_nums != null && total != null) ...[
+                const SizedBox(height: 16),
+
+                // Big total display
+                NeonCard(
+                  glowColor: Cyber.orange,
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
+                  child: Column(
+                    children: [
+                      Text('TOTAL SUM',
+                          style: TextStyle(
+                              color: Cyber.textDim,
+                              fontSize: 9,
+                              letterSpacing: 2,
+                              fontWeight: FontWeight.w700)),
+                      const SizedBox(height: 8),
+                      HudCorners(
+                        color: Cyber.orange,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 28, vertical: 8),
+                          child: Text(_fmt(total),
+                              style: const TextStyle(
+                                  color: Cyber.orange,
+                                  fontSize: 38,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 2)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Stats row
+                Row(children: [
+                  Expanded(child: _StatBox(label: 'COUNT', value: '${_nums!.length}', color: Cyber.cyan)),
+                  const SizedBox(width: 8),
+                  Expanded(child: _StatBox(label: 'MIN', value: _fmt(min!), color: Cyber.green)),
+                  const SizedBox(width: 8),
+                  Expanded(child: _StatBox(label: 'MAX', value: _fmt(max!), color: Cyber.pink)),
+                ]),
+                const SizedBox(height: 12),
+
+                // Parsed data list
+                NeonCard(
+                  glowColor: Cyber.orange,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CardHeader(
+                          label: 'PARSED DATA',
+                          icon: Icons.list_rounded,
+                          color: Cyber.orange),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: _nums!
+                            .asMap()
+                            .entries
+                            .map((e) => Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 5),
+                                  decoration: BoxDecoration(
+                                    color: Cyber.orange.withOpacity(0.06),
+                                    border: Border.all(
+                                        color: Cyber.orange.withOpacity(0.2)),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text('[${e.key}] ',
+                                          style: TextStyle(
+                                              color: Cyber.textDim,
+                                              fontSize: 10,
+                                              letterSpacing: 0.5)),
+                                      Text(_fmt(e.value),
+                                          style: const TextStyle(
+                                              color: Cyber.orange,
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w800)),
+                                    ],
+                                  ),
+                                ))
+                            .toList(),
+                      ),
+                      const SizedBox(height: 14),
+                      NeonDivider(color: Cyber.orange.withOpacity(0.3)),
+                      const SizedBox(height: 10),
+                      ResultTile(
+                          label: 'Jumlah Total',
+                          value: _fmt(total),
+                          color: Cyber.orange),
+                    ],
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
   }
+
+  Widget _inputLabel(String t) => Text(t,
+      style: TextStyle(
+          color: Cyber.orange,
+          fontSize: 9,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 2));
 }
 
 class _StatBox extends StatelessWidget {
-  final String label;
-  final String value;
+  final String label, value;
   final Color color;
-
-  const _StatBox({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
+  const _StatBox(
+      {required this.label, required this.value, required this.color});
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.08),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: color.withOpacity(0.2)),
-        ),
-        child: Column(
-          children: [
-            Text(
-              value,
+    return NeonCard(
+      glowColor: color,
+      cutSize: 8,
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        children: [
+          Text(label,
               style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: color,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(fontSize: 10, color: Colors.grey[600]),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+                  color: Cyber.textDim,
+                  fontSize: 8,
+                  letterSpacing: 1.5,
+                  fontWeight: FontWeight.w700)),
+          const SizedBox(height: 4),
+          Text(value,
+              style: TextStyle(
+                  color: color,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900)),
+        ],
       ),
     );
   }

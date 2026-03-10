@@ -1,228 +1,265 @@
 import 'package:flutter/material.dart';
+import '../theme/cyber_theme.dart';
 
 class Anggota {
-  final String nama;
-  final String nim;
-  final String peran;
+  final String nama, nim, peran;
   final IconData icon;
   final Color color;
-
-  const Anggota({
-    required this.nama,
-    required this.nim,
-    required this.peran,
-    required this.icon,
-    required this.color,
-  });
+  const Anggota(
+      {required this.nama,
+      required this.nim,
+      required this.peran,
+      required this.icon,
+      required this.color});
 }
 
 class DataKelompokPage extends StatelessWidget {
   const DataKelompokPage({super.key});
 
-  static const List<Anggota> _anggota = [
+  static const _anggota = <Anggota>[
     Anggota(
-      nama: 'Ahmad Rizky Pratama',
-      nim: '2024001001',
-      peran: 'Ketua Kelompok',
-      icon: Icons.stars_rounded,
-      color: Color(0xFF1565C0),
-    ),
+        nama: 'Ahmad Rizky Pratama',
+        nim: '2024001001',
+        peran: 'Ketua Kelompok',
+        icon: Icons.stars_rounded,
+        color: Cyber.cyan),
     Anggota(
-      nama: 'Siti Nurhaliza',
-      nim: '2024001002',
-      peran: 'Sekretaris',
-      icon: Icons.edit_note_rounded,
-      color: Color(0xFF2E7D32),
-    ),
+        nama: 'Siti Nurhaliza',
+        nim: '2024001002',
+        peran: 'Sekretaris',
+        icon: Icons.edit_note_rounded,
+        color: Cyber.green),
     Anggota(
-      nama: 'Budi Santoso',
-      nim: '2024001003',
-      peran: 'Bendahara',
-      icon: Icons.account_balance_wallet_rounded,
-      color: Color(0xFF6A1B9A),
-    ),
+        nama: 'Budi Santoso',
+        nim: '2024001003',
+        peran: 'Bendahara',
+        icon: Icons.account_balance_wallet_rounded,
+        color: Cyber.purple),
     Anggota(
-      nama: 'Dewi Rahmawati',
-      nim: '2024001004',
-      peran: 'Anggota',
-      icon: Icons.person_rounded,
-      color: Color(0xFFE65100),
-    ),
+        nama: 'Dewi Rahmawati',
+        nim: '2024001004',
+        peran: 'Anggota',
+        icon: Icons.person_rounded,
+        color: Cyber.orange),
   ];
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Data Kelompok',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: const Color(0xFF1565C0),
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // Header card
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [const Color(0xFF1565C0), const Color(0xFF1976D2)],
-              ),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              children: [
-                const Icon(Icons.groups_rounded, color: Colors.white, size: 48),
-                const SizedBox(height: 10),
-                const Text(
-                  'Kelompok 1',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Mata Kuliah Pemrograman Mobile',
-                  style: TextStyle(color: Colors.white.withOpacity(0.85)),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '${_anggota.length} Anggota',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
+    return CyberScaffold(
+      title: 'Data Kelompok',
+      accent: Cyber.cyan,
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 60, 16, 20),
+          children: [
+            // ── Header banner ──
+            NeonCard(
+              glowColor: Cyber.cyan,
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Cyber.cyan.withOpacity(0.1),
+                      border: Border.all(color: Cyber.cyan.withOpacity(0.3)),
+                      boxShadow: [
+                        BoxShadow(
+                            color: Cyber.cyan.withOpacity(0.15),
+                            blurRadius: 12)
+                      ],
                     ),
+                    child: const Icon(Icons.groups_rounded,
+                        color: Cyber.cyan, size: 26),
                   ),
+                  const SizedBox(height: 14),
+                  const Text('KELOMPOK 1',
+                      style: TextStyle(
+                          color: Cyber.textMain,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 3)),
+                  const SizedBox(height: 4),
+                  Text('// Mata Kuliah Pemrograman Mobile',
+                      style: TextStyle(
+                          color: Cyber.textDim,
+                          fontSize: 12,
+                          letterSpacing: 0.5)),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: Cyber.cyan.withOpacity(0.08),
+                      border: Border.all(color: Cyber.cyan.withOpacity(0.25)),
+                    ),
+                    child: Text('${_anggota.length} MEMBERS',
+                        style: TextStyle(
+                            color: Cyber.cyan,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.5)),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // ── Section label ──
+            Row(children: [
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Cyber.cyan.withOpacity(0.08),
+                  border: Border.all(color: Cyber.cyan.withOpacity(0.25)),
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'DAFTAR ANGGOTA',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: Colors.grey[600],
-              letterSpacing: 1.2,
-            ),
-          ),
-          const SizedBox(height: 10),
-          ..._anggota.asMap().entries.map((entry) {
-            final idx = entry.key;
-            final anggota = entry.value;
-            return _AnggotaCard(anggota: anggota, nomor: idx + 1);
-          }),
-        ],
+                child: Text('PERSONNEL',
+                    style: TextStyle(
+                        color: Cyber.cyan,
+                        fontSize: 9,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 2)),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                  child: NeonDivider(color: Cyber.cyan.withOpacity(0.25))),
+            ]),
+            const SizedBox(height: 14),
+
+            // ── Member cards ──
+            ..._anggota.asMap().entries.map((e) =>
+                _MemberCard(anggota: e.value, index: e.key + 1)),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _AnggotaCard extends StatelessWidget {
+class _MemberCard extends StatelessWidget {
   final Anggota anggota;
-  final int nomor;
-
-  const _AnggotaCard({required this.anggota, required this.nomor});
+  final int index;
+  const _MemberCard({required this.anggota, required this.index});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: anggota.color.withOpacity(0.12),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            CircleAvatar(
-              radius: 26,
-              backgroundColor: anggota.color.withOpacity(0.12),
-              child: Icon(anggota.icon, color: anggota.color, size: 26),
-            ),
-            Positioned(
-              bottom: -2,
-              right: -2,
-              child: Container(
-                width: 20,
-                height: 20,
-                decoration: BoxDecoration(
-                  color: anggota.color,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
-                ),
-                child: Center(
-                  child: Text(
-                    '$nomor',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: CustomPaint(
+        painter: _MemberPainter(anggota.color),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+          child: Row(
+            children: [
+              // Index + icon
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: anggota.color.withOpacity(0.08),
+                      border:
+                          Border.all(color: anggota.color.withOpacity(0.25)),
+                    ),
+                    child: Icon(anggota.icon, color: anggota.color, size: 22),
+                  ),
+                  Positioned(
+                    bottom: -4,
+                    right: -4,
+                    child: Container(
+                      width: 18,
+                      height: 18,
+                      decoration: BoxDecoration(
+                        color: anggota.color,
+                        boxShadow: [
+                          BoxShadow(
+                              color: anggota.color.withOpacity(0.4),
+                              blurRadius: 6)
+                        ],
+                      ),
+                      child: Center(
+                          child: Text('$index',
+                              style: const TextStyle(
+                                  color: Cyber.bg,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w900))),
                     ),
                   ),
+                ],
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(anggota.nama.toUpperCase(),
+                        style: const TextStyle(
+                            color: Cyber.textMain,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.5)),
+                    const SizedBox(height: 4),
+                    Text('NIM: ${anggota.nim}',
+                        style: TextStyle(
+                            color: Cyber.textDim,
+                            fontSize: 11,
+                            letterSpacing: 0.5)),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: anggota.color.withOpacity(0.08),
+                        border:
+                            Border.all(color: anggota.color.withOpacity(0.25)),
+                      ),
+                      child: Text(anggota.peran.toUpperCase(),
+                          style: TextStyle(
+                              color: anggota.color,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.5)),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ],
-        ),
-        title: Text(
-          anggota.nama,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 2),
-            Text(
-              'NIM: ${anggota.nim}',
-              style: TextStyle(color: Colors.grey[600], fontSize: 12),
-            ),
-            const SizedBox(height: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                // ignore: deprecated_member_use
-                color: anggota.color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                anggota.peran,
-                style: TextStyle(
-                  color: anggota.color,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
+}
+
+class _MemberPainter extends CustomPainter {
+  final Color accent;
+  _MemberPainter(this.accent);
+
+  @override
+  void paint(Canvas canvas, Size s) {
+    canvas.drawRect(
+        Rect.fromLTWH(0, 0, s.width, s.height), Paint()..color = Cyber.panel);
+    canvas.drawRect(
+        Rect.fromLTWH(0, 0, s.width, s.height),
+        Paint()
+          ..color = Cyber.border
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1);
+    // left accent
+    canvas.drawRect(
+        Rect.fromLTWH(0, 0, 3, s.height), Paint()..color = accent);
+    canvas.drawRect(
+        Rect.fromLTWH(0, 0, 3, s.height),
+        Paint()
+          ..color = accent.withOpacity(0.3)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.outer, 4));
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter o) => false;
 }

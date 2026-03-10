@@ -1,225 +1,251 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../theme/cyber_theme.dart';
 import '../widgets/app_widgets.dart';
 
 class OperasiHitungPage extends StatefulWidget {
   const OperasiHitungPage({super.key});
-
   @override
   State<OperasiHitungPage> createState() => _OperasiHitungPageState();
 }
 
 class _OperasiHitungPageState extends State<OperasiHitungPage> {
-  final _aCtrl = TextEditingController();
-  final _bCtrl = TextEditingController();
-  double? hasil_tambah;
-  double? hasil_kurang;
-  bool _dihitung = false;
+  final _ctrlA = TextEditingController();
+  final _ctrlB = TextEditingController();
+  double? _a, _b;
 
   void _hitung() {
-    final a = double.tryParse(_aCtrl.text);
-    final b = double.tryParse(_bCtrl.text);
+    FocusScope.of(context).unfocus();
+    final a = double.tryParse(_ctrlA.text.replaceAll(',', '.'));
+    final b = double.tryParse(_ctrlB.text.replaceAll(',', '.'));
     if (a == null || b == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Masukkan angka yang valid!'),
-          backgroundColor: Colors.red,
+        SnackBar(
+          content: Row(children: [
+            const Icon(Icons.error_outline, color: Cyber.red, size: 16),
+            const SizedBox(width: 8),
+            const Text('// Input harus berupa angka',
+                style: TextStyle(color: Cyber.textMain, letterSpacing: 0.5)),
+          ]),
+          backgroundColor: Cyber.panel,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(2),
+              side: BorderSide(color: Cyber.red.withOpacity(0.3))),
         ),
       );
       return;
     }
     setState(() {
-      hasil_tambah = a + b;
-      hasil_kurang = a - b;
-      _dihitung = true;
+      _a = a;
+      _b = b;
     });
   }
 
   void _reset() {
-    _aCtrl.clear();
-    _bCtrl.clear();
     setState(() {
-      hasil_tambah = null;
-      hasil_kurang = null;
-      _dihitung = false;
+      _ctrlA.clear();
+      _ctrlB.clear();
+      _a = _b = null;
     });
   }
 
-  String _formatAngka(double val) {
-    if (val == val.truncate()) {
-      return val.truncate().toString();
-    }
-    return val.toStringAsFixed(4).replaceAll(RegExp(r'0+$'), '');
-  }
+  String _fmt(double v) => v == v.roundToDouble()
+      ? v.toStringAsFixed(0)
+      : v.toStringAsFixed(4).replaceAll(RegExp(r'0+$'), '');
 
   @override
   void dispose() {
-    _aCtrl.dispose();
-    _bCtrl.dispose();
+    _ctrlA.dispose();
+    _ctrlB.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final color = const Color(0xFF2E7D32);
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Penjumlahan & Pengurangan',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: color,
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
-      backgroundColor: Colors.grey[100],
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            AppCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: color.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Icon(Icons.input_rounded, color: color),
-                      ),
-                      const SizedBox(width: 12),
-                      const Text(
-                        'Masukkan Dua Angka',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          controller: _aCtrl,
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true,
-                            signed: true,
-                          ),
-                          inputFormatters: [
-                            FilteringTextInputFormatter.allow(
-                              RegExp(r'[0-9\.\-]'),
-                            ),
-                          ],
-                          decoration: InputDecoration(
-                            labelText: 'Angka A',
-                            prefixIcon: const Icon(Icons.looks_one_outlined),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          onChanged: (_) => setState(() => _dihitung = false),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: TextFormField(
-                          controller: _bCtrl,
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true,
-                            signed: true,
-                          ),
-                          inputFormatters: [
-                            FilteringTextInputFormatter.allow(
-                              RegExp(r'[0-9\.\-]'),
-                            ),
-                          ],
-                          decoration: InputDecoration(
-                            labelText: 'Angka B',
-                            prefixIcon: const Icon(Icons.looks_two_outlined),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          onChanged: (_) => setState(() => _dihitung = false),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: _hitung,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: color,
-                            foregroundColor: Colors.white,
-                          ),
-                          icon: const Icon(Icons.calculate_rounded),
-                          label: const Text('Hitung'),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      OutlinedButton.icon(
-                        onPressed: _reset,
-                        icon: const Icon(Icons.refresh_rounded),
-                        label: const Text('Reset'),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            if (_dihitung && hasil_tambah != null) ...[
-              const SizedBox(height: 16),
-              AppCard(
+    return CyberScaffold(
+      title: 'Operasi Hitung',
+      accent: Cyber.green,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 60, 16, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // ── Input card ──
+              NeonCard(
+                glowColor: Cyber.green,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: color.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Icon(Icons.bar_chart_rounded, color: color),
-                        ),
-                        const SizedBox(width: 12),
-                        const Text(
-                          'Hasil Perhitungan',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
+                    CardHeader(
+                        label: 'DATA INPUT',
+                        icon: Icons.input_rounded,
+                        color: Cyber.green),
+                    const SizedBox(height: 18),
+
+                    // Value A
+                    _inputLabel('VARIABLE_A'),
+                    const SizedBox(height: 6),
+                    TextFormField(
+                      controller: _ctrlA,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                            RegExp(r'[\d.,\-]'))
                       ],
+                      style:
+                          const TextStyle(color: Cyber.textMain, letterSpacing: 1),
+                      decoration: InputDecoration(
+                        hintText: 'Enter value A...',
+                        prefixIcon: Container(
+                          width: 40,
+                          alignment: Alignment.center,
+                          child: Text('A',
+                              style: TextStyle(
+                                  color: Cyber.green,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 16)),
+                        ),
+                      ),
+                      textInputAction: TextInputAction.next,
                     ),
                     const SizedBox(height: 16),
-                    ResultTile(
-                      label: '${_aCtrl.text} + ${_bCtrl.text}',
-                      value: _formatAngka(hasil_tambah!),
-                      color: const Color(0xFF1565C0),
+
+                    // Value B
+                    _inputLabel('VARIABLE_B'),
+                    const SizedBox(height: 6),
+                    TextFormField(
+                      controller: _ctrlB,
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                            RegExp(r'[\d.,\-]'))
+                      ],
+                      style:
+                          const TextStyle(color: Cyber.textMain, letterSpacing: 1),
+                      decoration: InputDecoration(
+                        hintText: 'Enter value B...',
+                        prefixIcon: Container(
+                          width: 40,
+                          alignment: Alignment.center,
+                          child: Text('B',
+                              style: TextStyle(
+                                  color: Cyber.green,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 16)),
+                        ),
+                      ),
+                      textInputAction: TextInputAction.done,
+                      onFieldSubmitted: (_) => _hitung(),
                     ),
-                    ResultTile(
-                      label: '${_aCtrl.text} − ${_bCtrl.text}',
-                      value: _formatAngka(hasil_kurang!),
-                      color: const Color(0xFFE65100),
-                    ),
+                    const SizedBox(height: 22),
+
+                    // Buttons
+                    Row(children: [
+                      Expanded(
+                        child: CyberButton(
+                          label: 'COMPUTE',
+                          icon: Icons.bolt_rounded,
+                          color: Cyber.green,
+                          onPressed: _hitung,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      OutlinedButton.icon(
+                        onPressed: _reset,
+                        icon:
+                            const Icon(Icons.refresh_rounded, size: 15),
+                        label: const Text('RESET'),
+                      ),
+                    ]),
                   ],
                 ),
               ),
+
+              // ── Results ──
+              if (_a != null && _b != null) ...[
+                const SizedBox(height: 16),
+                NeonCard(
+                  glowColor: Cyber.green,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CardHeader(
+                          label: 'COMPUTATION OUTPUT',
+                          icon: Icons.analytics_rounded,
+                          color: Cyber.green),
+                      const SizedBox(height: 14),
+
+                      // Expression display
+                      _exprBox('${ _fmt(_a!)} + ${_fmt(_b!)}',
+                          _fmt(_a! + _b!), Cyber.green),
+                      const SizedBox(height: 10),
+                      _exprBox('${_fmt(_a!)} − ${_fmt(_b!)}',
+                          _fmt(_a! - _b!), Cyber.cyan),
+
+                      const SizedBox(height: 14),
+                      const NeonDivider(color: Cyber.green),
+                      const SizedBox(height: 12),
+
+                      ResultTile(
+                          label: 'Penjumlahan (A + B)',
+                          value: _fmt(_a! + _b!),
+                          color: Cyber.green),
+                      ResultTile(
+                          label: 'Pengurangan (A − B)',
+                          value: _fmt(_a! - _b!),
+                          color: Cyber.cyan),
+                    ],
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _inputLabel(String t) => Text(t,
+      style: TextStyle(
+          color: Cyber.green,
+          fontSize: 9,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 2));
+
+  Widget _exprBox(String expr, String result, Color c) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: c.withOpacity(0.04),
+        border: Border.all(color: c.withOpacity(0.15)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Flexible(
+            child: Text(expr,
+                style: TextStyle(
+                    color: Cyber.textDim, fontSize: 14, letterSpacing: 0.5)),
+          ),
+          Row(children: [
+            Text('= ',
+                style: TextStyle(
+                    color: c.withOpacity(0.5),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w300)),
+            Text(result,
+                style: TextStyle(
+                    color: c,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.5)),
+          ]),
+        ],
       ),
     );
   }
