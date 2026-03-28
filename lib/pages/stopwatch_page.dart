@@ -11,7 +11,7 @@ class StopwatchPage extends StatefulWidget {
 class _StopwatchPageState extends State<StopwatchPage>
     with SingleTickerProviderStateMixin {
   Timer? _timer;
-  int _milliseconds = 0;
+  int _milliseconds = 5998000;
   bool _isRunning = false;
   final List<String> _laps = [];
   late AnimationController _animController;

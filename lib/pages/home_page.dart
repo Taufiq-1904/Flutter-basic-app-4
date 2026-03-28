@@ -5,6 +5,9 @@ import 'cek_bilangan_page.dart';
 import 'jumlah_total_page.dart';
 import 'stopwatch_page.dart';
 import 'hitung_piramid_page.dart';
+import 'hari_weton_page.dart';
+import 'usia_kabisat_page.dart';
+import 'gregorian_hijri_page.dart';
 import 'login_page.dart';
 
 class _NavItem {
@@ -30,6 +33,9 @@ class _HomePageState extends State<HomePage> {
     _NavItem('Jumlah Total', Icons.functions_rounded),
     _NavItem('Stopwatch', Icons.timer_rounded),
     _NavItem('Hitung Piramid', Icons.change_history_rounded),
+    _NavItem('Hari & Weton', Icons.calendar_month_rounded),
+    _NavItem('Usia & Kabisat', Icons.cake_rounded),
+    _NavItem('Masehi ke Hijriah', Icons.swap_horiz_rounded),
   ];
 
   Widget _getPage() {
@@ -46,6 +52,12 @@ class _HomePageState extends State<HomePage> {
         return const StopwatchPage();
       case 5:
         return const HitungPiramidPage();
+      case 6:
+        return const HariWetonPage();
+      case 7:
+        return const UsiaKabisatPage();
+      case 8:
+        return const GregorianHijriPage();
       default:
         return const DataKelompokPage();
     }
